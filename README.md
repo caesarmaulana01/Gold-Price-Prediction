@@ -366,7 +366,7 @@ feature_selected = feature_minmax_transform[sfm.get_support()]
 
 - **R² (Coefficient of Determination)**: Mengukur seberapa baik model menjelaskan variansi dalam data. Formula R²:
 
-  R² = 1 - [Σ(y_i - ŷ_i)² / Σ(y_i - ȳ)²]
+  $$ R = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2} $$
 
 
 ### Hasil Evaluasi:
