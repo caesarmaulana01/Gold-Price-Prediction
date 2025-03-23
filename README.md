@@ -362,27 +362,21 @@ feature_selected = feature_minmax_transform[sfm.get_support()]
 ### Metrik Evaluasi:
 - **RMSE (Root Mean Squared Error)**: Mengukur perbedaan antara nilai prediksi dan nilai aktual. Formula RMSE adalah:
 
-  $$ 
-  RMSE = \sqrt{\frac{1}{n} \sum (y - \hat{y})^2} 
-  $$
+  `RMSE = sqrt( (1/n) * Σ(y - ŷ)² )`
 
   Di mana:
-  - \( y \) adalah nilai aktual.
-  - \( \hat{y} \) adalah nilai prediksi.
-  - \( n \) adalah jumlah data.
+  - `y` adalah nilai aktual.
+  - `ŷ` adalah nilai prediksi.
+  - `n` adalah jumlah data.
 
 - **R² (Coefficient of Determination)**: Mengukur seberapa baik model dalam menjelaskan variasi data. Formula R² adalah:
 
-  $$ 
-  R^2 = 1 - \frac{\sum (y - \hat{y})^2}{\sum (y - \bar{y})^2} 
-  $$
+  `R² = 1 - ( Σ(y - ŷ)² / Σ(y - ȳ)² )`
 
   Di mana:
-  - \( y \) adalah nilai aktual.
-  - \( \hat{y} \) adalah nilai prediksi.
-  - \( \bar{y} \) adalah rata-rata nilai aktual.
-
-
+  - `y` adalah nilai aktual.
+  - `ŷ` adalah nilai prediksi.
+  - `ȳ` adalah rata-rata nilai aktual.
 
 
 ### Hasil Evaluasi:
