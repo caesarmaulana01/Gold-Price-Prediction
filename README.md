@@ -63,24 +63,20 @@ Fitur yang dikumpulkan mencakup berbagai faktor ekonomi seperti **harga minyak m
 
 ## Data Preparation
 
-# Data Preparation
-
 Tahap **Data Preparation** adalah salah satu tahap kritis dalam proyek machine learning. Pada tahap ini, data yang telah dikumpulkan diproses dan disiapkan agar siap digunakan untuk pemodelan. Berikut adalah penjelasan lengkap tentang tahap **Data Preparation** yang dilakukan dalam proyek ini:
 
----
-
-## 1. Pengumpulan Data
+### 1. Pengumpulan Data
 
 ### **Sumber Data**
 Dataset diperoleh dari [Kaggle Gold Price Prediction Dataset](https://www.kaggle.com/datasets/sid321axn/gold-price-prediction-dataset).
 
-### **Karakteristik Data**
+#### **Karakteristik Data**
 Dataset mencakup data historis harga emas dan berbagai faktor ekonomi yang mempengaruhinya, seperti harga minyak, indeks saham, dan nilai tukar mata uang. Dataset ini memiliki **1718 baris** dan **80 kolom**.
 
-### **Rentang Waktu**
+#### **Rentang Waktu**
 Data dikumpulkan dari **18 November 2011** hingga **1 Januari 2019**.
 
-### **Alasan Pengumpulan Data**
+#### **Alasan Pengumpulan Data**
 Pengumpulan data dari sumber yang kredibel dan komprehensif memastikan bahwa data yang digunakan memiliki kualitas yang baik dan relevan dengan masalah yang ingin diselesaikan.
 
 ```python
@@ -90,9 +86,7 @@ import pandas as pd
 df = pd.read_csv("/kaggle/input/gold-price-prediction-dataset/FINAL_USO.csv")
 ```
 
----
-
-## 2. Eksplorasi Data (EDA)
+### 2. Eksplorasi Data (EDA)
 
 ### **Pemeriksaan Nilai yang Hilang**
 Sebelum melanjutkan, penting untuk memeriksa apakah ada nilai yang hilang dalam dataset.
@@ -102,7 +96,7 @@ Sebelum melanjutkan, penting untuk memeriksa apakah ada nilai yang hilang dalam 
 df.isnull().values.any()  # Output: False
 ```
 
-### **Analisis Korelasi**
+#### **Analisis Korelasi**
 Menggunakan heatmap untuk memvisualisasikan korelasi antar fitur.
 
 ```python
@@ -117,11 +111,9 @@ plt.show()
 
 ![Heatmap Korelasi](images/heatmap_correlation.jjpg)
 
----
+### 3. Preprocessing Data
 
-## 3. Preprocessing Data
-
-### **Normalisasi Data**
+#### **Normalisasi Data**
 Menggunakan MinMaxScaler untuk menormalisasi fitur-fitur dalam dataset ke rentang antara 0 dan 1.
 
 ```python
@@ -134,7 +126,7 @@ scaler = MinMaxScaler()
 feature_minmax_transform_data = scaler.fit_transform(df[feature_columns])
 ```
 
-### **Penghitungan Indikator Teknikal**
+#### **Penghitungan Indikator Teknikal**
 Menghitung indikator teknikal seperti MACD, RSI, dan Bollinger Bands untuk menambahkan fitur baru.
 
 ```python
@@ -147,9 +139,7 @@ def calculate_MACD(df, nslow=26, nfast=12):
     return dif, MACD
 ```
 
----
-
-## 4. Pemilihan Fitur
+### 4. Pemilihan Fitur
 
 ### **Analisis Korelasi**
 Menggunakan matriks korelasi untuk mengidentifikasi fitur-fitur yang memiliki korelasi tinggi dengan target (harga emas).
@@ -160,7 +150,7 @@ corr_matrix = df.corr()
 coef = corr_matrix["Adj Close"].sort_values(ascending=False)
 ```
 
-### **Seleksi Fitur**
+#### **Seleksi Fitur**
 Menggunakan Lasso Regression untuk memilih fitur yang paling signifikan.
 
 ```python
@@ -173,9 +163,7 @@ feature_sel_model = SelectFromModel(lasso)
 feature_sel_model.fit(X_train, y_train)
 ```
 
----
-
-## 5. Pembagian Data
+### 5. Pembagian Data
 
 ### **Pembagian Data Pelatihan dan Validasi**
 Data dibagi menjadi data pelatihan dan data validasi. Data validasi menggunakan 90 baris terakhir dari dataset.
@@ -186,7 +174,7 @@ validation_X = feature_minmax_transform[-90:-1]
 validation_y = target_adj_close[-90:-1]
 ```
 
-### **TimeSeriesSplit**
+#### **TimeSeriesSplit**
 Menggunakan TimeSeriesSplit untuk membagi data deret waktu menjadi beberapa fold.
 
 ```python
@@ -196,9 +184,7 @@ from sklearn.model_selection import TimeSeriesSplit
 tscv = TimeSeriesSplit(n_splits=5)
 ```
 
----
-
-## **Ringkasan Tahap Data Preparation**
+### **Ringkasan Tahap Data Preparation**
 Tahap Data Preparation meliputi:
 
 1. **Pengumpulan Data**: Memastikan data berasal dari sumber yang kredibel.
@@ -207,14 +193,12 @@ Tahap Data Preparation meliputi:
 4. **Pemilihan Fitur**: Menggunakan analisis korelasi dan seleksi fitur untuk memilih fitur yang paling signifikan.
 5. **Pembagian Data**: Membagi data menjadi data pelatihan dan validasi dengan menjaga urutan waktu.
 
-### **Alasan Data Preparation**
+#### **Alasan Data Preparation**
 Tahap ini diperlukan untuk memastikan bahwa:
 - Data siap digunakan untuk pemodelan,
 - Meningkatkan kualitas data,
 - Mengurangi risiko overfitting atau underfitting pada model.
 
-
----
 
 ## Modeling
 
@@ -226,8 +210,6 @@ Tahap ini diperlukan untuk memastikan bahwa:
 5. **Bayesian Ridge Regression**: Digunakan untuk estimasi distribusi parameter model, memberikan insight lebih dalam tentang ketidakpastian model.
 6. **Gradient Boosting Regressor**: Digunakan untuk meningkatkan akurasi prediksi dengan menggabungkan banyak model pohon keputusan.
 7. **Stochastic Gradient Descent (SGD)**: Digunakan untuk optimisasi pada dataset besar dengan iterasi acak.
-
----
 
 ### Tahapan dan Parameter yang Digunakan:
 
@@ -339,8 +321,6 @@ sgd_feat = sgd.fit(X_train, y_train)
 validate_result(sgd_feat, 'SGD')
 ```
 
----
-
 ### Kelebihan dan Kekurangan Algoritma:
 
 | Algoritma | Kelebihan | Kekurangan |
@@ -353,7 +333,6 @@ validate_result(sgd_feat, 'SGD')
 | Gradient Boosting | Akurat, dapat menangani data non-linear. | Memerlukan tuning hyperparameter, komputasi mahal. |
 | SGD | Efisien untuk dataset besar, dapat digunakan dengan berbagai fungsi kerugian. | Sensitif terhadap scaling data, memerlukan tuning parameter. |
 
----
 
 ### Improvement Model:
 
@@ -375,7 +354,6 @@ feature_selected = feature_minmax_transform[sfm.get_support()]
 - **Pemilihan Model Terbaik**:
   - **Lasso Regression** dipilih sebagai model terbaik karena memberikan nilai RMSE terendah (0.709) dan R² tertinggi (0.884) pada data validasi.
   - **Alasan Pemilihan**: Lasso menunjukkan performa yang konsisten baik pada data training maupun validasi, serta mampu mengurangi overfitting dengan regularisasi L1.
-
 
 ---
 
@@ -403,13 +381,13 @@ Berikut adalah grafik perbandingan RMSE dari model-model setelah dilakukan selek
 
 ### Metrik Evaluasi:
 - **RMSE (Root Mean Squared Error)**: Mengukur perbedaan antara nilai prediksi dan aktual. Formula RMSE:
-  \[
+  $$
   RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
-  \]
+  $$
 - **R² (Coefficient of Determination)**: Mengukur seberapa baik model menjelaskan variansi dalam data. Formula R²:
-  \[
+  $$
   R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}
-  \]
+  $$
 
 ### Hasil Evaluasi:
 - **Decision Tree**:
@@ -446,5 +424,3 @@ Berikut adalah grafik perbandingan RMSE dari model-model setelah dilakukan selek
 - **Rekomendasi**: **Ensemble Model** dan **Lasso** dengan fitur terpilih dapat digunakan sebagai solusi terbaik untuk prediksi harga emas.
 
 ---
-
-**---Ini adalah bagian akhir laporan---**
