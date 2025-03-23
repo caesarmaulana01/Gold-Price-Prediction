@@ -359,26 +359,6 @@ feature_selected = feature_minmax_transform[sfm.get_support()]
 
 ## Evaluation
 
-### Hasil Prediksi Sebelum Feature Selection
-Berikut adalah grafik hasil prediksi dari model sebelum dilakukan seleksi fitur:
-
-![Hasil Prediksi Sebelum Feature Selection](images/prediction_before_fs.jpg)
-
-### Perbandingan RMSE Sebelum Feature Selection
-Berikut adalah grafik perbandingan RMSE dari model-model sebelum dilakukan seleksi fitur:
-
-![Perbandingan RMSE Sebelum Feature Selection](images/rmse_after_fs.jpg)
-
-### Hasil Prediksi Setelah Feature Selection
-Berikut adalah grafik hasil prediksi dari model setelah dilakukan seleksi fitur:
-
-![Hasil Prediksi Setelah Feature Selection](images/prediction_after_fs.jpg)
-
-### Perbandingan RMSE Setelah Feature Selection
-Berikut adalah grafik perbandingan RMSE dari model-model setelah dilakukan seleksi fitur:
-
-![Perbandingan RMSE Setelah Feature Selection](images/rmse_after_fs.jpg)
-
 ### Metrik Evaluasi:
 - **RMSE (Root Mean Squared Error)**: Mengukur perbedaan antara nilai prediksi dan aktual. Formula RMSE:
   
@@ -387,7 +367,6 @@ Berikut adalah grafik perbandingan RMSE dari model-model setelah dilakukan selek
 - **R² (Coefficient of Determination)**: Mengukur seberapa baik model menjelaskan variansi dalam data. Formula R²:
 
   $$ R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2} $$
-
 
 ### Hasil Evaluasi:
 - **Decision Tree**:
@@ -417,6 +396,26 @@ Berikut adalah grafik perbandingan RMSE dari model-model setelah dilakukan selek
 - **Ensemble Model**:
   - **RMSE**: 0.7007271848703037
   - **R² Score**: 0.8869036929493133
+
+### Hasil Prediksi Sebelum Feature Selection
+Berikut adalah grafik hasil prediksi dari model sebelum dilakukan seleksi fitur:
+
+![Hasil Prediksi Sebelum Feature Selection](images/prediction_before_fs.jpg)
+
+### Perbandingan RMSE Sebelum Feature Selection
+Berikut adalah grafik perbandingan RMSE dari model-model sebelum dilakukan seleksi fitur:
+
+![Perbandingan RMSE Sebelum Feature Selection](images/rmse_after_fs.jpg)
+
+### Hasil Prediksi Setelah Feature Selection
+Berikut adalah grafik hasil prediksi dari model setelah dilakukan seleksi fitur:
+
+![Hasil Prediksi Setelah Feature Selection](images/prediction_after_fs.jpg)
+
+### Perbandingan RMSE Setelah Feature Selection
+Berikut adalah grafik perbandingan RMSE dari model-model setelah dilakukan seleksi fitur:
+
+![Perbandingan RMSE Setelah Feature Selection](images/rmse_after_fs.jpg)
 
 ### Kesimpulan:
 - **Model Terbaik**: **Ensemble Model** dengan kombinasi Lasso, Bayesian Ridge, dan Ridge menunjukkan performa terbaik dengan **RMSE 0.70** dan **R² Score 0.886**.
