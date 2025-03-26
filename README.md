@@ -199,10 +199,13 @@ target_adj_close = target_adj_close[:-90]
 Membangun struktur pohon dengan membagi data secara rekursif berdasarkan fitur yang memberikan pemisahan terbaik.
 
 **Parameter:**  
-- `random_state=0` → Menjamin hasil yang konsisten dengan seed yang tetap.
-- `max_depth=None` → Tidak membatasi kedalaman pohon (default), berisiko overfitting.
-- `min_samples_split=2` → Minimum jumlah sampel yang dibutuhkan untuk membagi node.
-- `min_samples_leaf=1` → Minimum jumlah sampel dalam setiap leaf node.
+- `criterion='squared_error'` (default): Menggunakan squared error untuk mengukur kualitas split.
+- `splitter='best'` (default): Memilih split terbaik berdasarkan impurity.
+- `max_depth=None` (default): Tidak ada batasan kedalaman pohon.
+- `min_samples_split=2` (default): Minimal 2 sampel untuk membagi node.
+- `min_samples_leaf=1` (default): Minimal 1 sampel per leaf.
+- `max_features=None` (default): Menggunakan semua fitur untuk split.
+- `random_state=0`: Menentukan seed agar hasil dapat direproduksi.
 
 | Kelebihan | Kekurangan |
 |-----------|------------|
@@ -215,9 +218,11 @@ Membangun struktur pohon dengan membagi data secara rekursif berdasarkan fitur y
 Mencari hyperplane optimal dalam ruang fitur yang meminimalkan error prediksi.
 
 **Parameter:**  
-- `kernel='linear'` → Menggunakan kernel linear untuk menemukan hubungan langsung antara variabel independen dan target.
-- `C=1.0` → Parameter regulasi yang mengontrol trade-off antara kompleksitas model dan margin kesalahan.
-- `epsilon=0.1` → Toleransi error dalam prediksi, nilai lebih besar memperbolehkan lebih banyak error dalam margin epsilon.
+- `kernel='linear'`: Menggunakan kernel linear untuk memisahkan data.
+- `C=1.0` (default): Parameter regularisasi.
+- `epsilon=0.1` (default): Menentukan margin error.
+- `degree=3` (default, tidak berlaku untuk linear kernel): Derajat polinomial untuk kernel 'poly'.
+- `gamma='scale'` (default, tidak berlaku untuk linear kernel): Skala otomatis untuk kernel RBF dan poly.
 
 | Kelebihan | Kekurangan |
 |-----------|------------|
@@ -230,8 +235,13 @@ Mencari hyperplane optimal dalam ruang fitur yang meminimalkan error prediksi.
 Membangun banyak pohon keputusan dengan teknik bagging.
 
 **Parameter:**  
-- `n_estimators=50` → Jumlah pohon dalam hutan, lebih banyak dapat meningkatkan akurasi tetapi memperpanjang waktu pelatihan.
-- `random_state=0` → Menjamin replikasi hasil dengan seed tetap.
+- `n_estimators=50`: Jumlah pohon dalam ensemble.
+- `criterion='squared_error'` (default): Metode pengukuran split.
+- `max_depth=None` (default): Tidak ada batasan kedalaman.
+- `min_samples_split=2` (default): Minimal 2 sampel untuk split.
+- `min_samples_leaf=1` (default): Minimal 1 sampel per leaf.
+- `max_features='auto'` (default): Memilih subset fitur secara otomatis.
+- `random_state=0`: Menentukan seed.
 
 | Kelebihan | Kekurangan |
 |-----------|------------|
@@ -244,8 +254,11 @@ Membangun banyak pohon keputusan dengan teknik bagging.
 Regresi linear dengan penalti L1 untuk seleksi fitur.
 
 **Parameter:**  
-- `n_alphas=1000` → Jumlah nilai alpha yang diuji untuk regulasi optimal.
-- `max_iter=3000` → Maksimum jumlah iterasi untuk konvergensi.
+- `alpha=1.0` (default): Koefisien regulasi L1.
+- `fit_intercept=True` (default): Memasukkan intersep dalam model.
+- `max_iter=3000`: Jumlah iterasi maksimal.
+- `tol=0.0001` (default): Toleransi konvergensi.
+- `selection='cyclic'` (default): Urutan update koefisien.
 
 | Kelebihan | Kekurangan |
 |-----------|------------|
@@ -258,7 +271,10 @@ Regresi linear dengan penalti L1 untuk seleksi fitur.
 Regresi linear dengan penalti L2 untuk menangani multikolinearitas.
 
 **Parameter:**  
-- `gcv_mode='auto'` → Memilih metode pencarian parameter alpha terbaik secara otomatis.
+- `alpha=1.0` (default): Koefisien regulasi L2.
+- `fit_intercept=True` (default): Memasukkan intersep dalam model.
+- `solver='auto'` (default): Memilih solver terbaik secara otomatis.
+- `gcv_mode='auto'`: Mode validasi silang.
 
 | Kelebihan | Kekurangan |
 |-----------|------------|
@@ -271,8 +287,11 @@ Regresi linear dengan penalti L2 untuk menangani multikolinearitas.
 Pendekatan Bayesian yang memodelkan distribusi probabilitas parameter.
 
 **Parameter:**  
-- `alpha_1=1e-6` → Parameter prior distribusi gamma untuk regulasi weight.
-- `alpha_2=1e-6` → Parameter prior distribusi gamma untuk varians noise data.
+- `alpha_1=1e-6`: Hyperprior alpha pertama.
+- `alpha_2=1e-6`: Hyperprior alpha kedua.
+- `lambda_1=1e-6` (default): Hyperprior lambda pertama.
+- `lambda_2=1e-6` (default): Hyperprior lambda kedua.
+- `n_iter=300` (default): Jumlah iterasi maksimum.
 
 | Kelebihan | Kekurangan |
 |-----------|------------|
@@ -285,9 +304,12 @@ Pendekatan Bayesian yang memodelkan distribusi probabilitas parameter.
 Membangun model secara bertahap dengan mengoreksi residual.
 
 **Parameter:**  
-- `n_estimators=70` → Jumlah pohon dalam boosting, lebih banyak bisa meningkatkan akurasi tetapi memperpanjang waktu pelatihan.
-- `learning_rate=0.1` → Mengontrol kontribusi setiap pohon dalam model akhir.
-- `max_depth=4` → Membatasi kedalaman pohon untuk menghindari overfitting.
+- `n_estimators=70`: Jumlah pohon dalam boosting.
+- `learning_rate=0.1`: Kecepatan pembelajaran.
+- `max_depth=4`: Kedalaman maksimal pohon.
+- `loss='squared_error'` (default): Fungsi loss.
+- `subsample=1.0` (default): Proporsi data untuk setiap pohon.
+- `min_samples_split=2` (default): Minimum sampel untuk split.
 
 | Kelebihan | Kekurangan |
 |-----------|------------|
@@ -300,8 +322,11 @@ Membangun model secara bertahap dengan mengoreksi residual.
 Optimisasi iteratif dengan gradient descent stokastik.
 
 **Parameter:**  
-- `max_iter=1000` → Jumlah iterasi maksimum untuk konvergensi.
-- `tol=1e-3` → Ambang batas perubahan error untuk berhenti iterasi lebih awal.
+- `max_iter=1000`: Jumlah iterasi maksimal.
+- `tol=1e-3`: Toleransi konvergensi.
+- `alpha=0.0001` (default): Koefisien regulasi L2.
+- `penalty='l2'` (default): Jenis regularisasi.
+- `learning_rate='invscaling'` (default): Metode penurunan learning rate.
 
 | Kelebihan | Kekurangan |
 |-----------|------------|
