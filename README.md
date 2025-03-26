@@ -370,16 +370,20 @@ Analisis korelasi menunjukkan:
 ### Visualisasi Kunci
 #### Performa Model Sebelum Seleksi Fitur
 ![Hasil Prediksi Sebelum Feature Selection](images/prediction_before_fs.jpg)
+
 *Gambar 1: Perbandingan prediksi vs aktual sebelum seleksi fitur*
 
 ![Perbandingan RMSE Sebelum Feature Selection](images/rmse_before_fs.jpg)
+
 *Gambar 2: Perbandingan RMSE antar model sebelum seleksi fitur*
 
 #### Performa Model Setelah Seleksi Fitur
 ![Hasil Prediksi Setelah Feature Selection](images/prediction_after_fs.jpg)
+
 *Gambar 3: Perbandingan prediksi vs aktual setelah seleksi fitur*
 
 ![Perbandingan RMSE Setelah Feature Selection](images/rmse_after_fs.jpg)
+
 *Gambar 4: Perbandingan RMSE antar model setelah seleksi fitur*
 
 ### Rekomendasi Bisnis
