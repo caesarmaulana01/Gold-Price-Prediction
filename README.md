@@ -63,74 +63,55 @@ Fitur yang dikumpulkan mencakup berbagai faktor ekonomi seperti **harga minyak m
 
 ## Data Preparation
 
-Tahap **Data Preparation** adalah salah satu tahap kritis dalam proyek machine learning. Pada tahap ini, data yang telah dikumpulkan diproses dan disiapkan agar siap digunakan untuk pemodelan. Berikut adalah penjelasan lengkap tentang tahap **Data Preparation** yang dilakukan dalam proyek ini:
+### 1. Ekstraksi dan Analisis Data Awal
+- Mengambil data harga penutupan yang disesuaikan (Adjusted Close) untuk:
+  - Emas (GLD)
+  - S&P 500 Index (SPY)
+  - Dow Jones Index (DJ)
+- Membuat visualisasi hubungan antara harga emas dan indeks saham
 
-### 1. Pengumpulan Data
-
-### **Sumber Data**
-Dataset diperoleh dari [Kaggle Gold Price Prediction Dataset](https://www.kaggle.com/datasets/sid321axn/gold-price-prediction-dataset).
-
-#### **Karakteristik Data**
-Dataset mencakup data historis harga emas dan berbagai faktor ekonomi yang mempengaruhinya, seperti harga minyak, indeks saham, dan nilai tukar mata uang. Dataset ini memiliki **1718 baris** dan **80 kolom**.
-
-#### **Rentang Waktu**
-Data dikumpulkan dari **18 November 2011** hingga **1 Januari 2019**.
-
-#### **Alasan Pengumpulan Data**
-Pengumpulan data dari sumber yang kredibel dan komprehensif memastikan bahwa data yang digunakan memiliki kualitas yang baik dan relevan dengan masalah yang ingin diselesaikan.
+### 2. Perhitungan Return Harian
+Mengimplementasikan fungsi untuk menghitung return harian:
 
 ```python
 import pandas as pd
 
-# Memuat dataset
-df = pd.read_csv("/kaggle/input/gold-price-prediction-dataset/FINAL_USO.csv")
+def compute_daily_returns(df):
+    daily_return = (df / df.shift(1)) - 1
+    daily_return.iloc[0] = 0  # Menghindari NaN di baris pertama
+    return daily_return
 ```
 
-### 2. Eksplorasi Data (EDA)
+Dihitung untuk seluruh fitur:
+- GLD, SPY, DJ, EG, USO, GDX, EU, OF, SF, OS, USB, PLT, PLD, RHO, USDI
 
-### **Pemeriksaan Nilai yang Hilang**
-Sebelum melanjutkan, penting untuk memeriksa apakah ada nilai yang hilang dalam dataset.
+Dibuat visualisasi return harian untuk 100 record terakhir.
 
-```python
-# Memeriksa nilai yang hilang
-df.isnull().values.any()  # Output: False
-```
+### 3. Analisis Statistik
+Menghitung statistik utama untuk return harian:
+- **Mean**
+- **Standard deviation**
+- **Kurtosis**
 
-#### **Analisis Korelasi**
-Menggunakan heatmap untuk memvisualisasikan korelasi antar fitur.
+Dilakukan untuk:
+- Gold ETF (GLD)
+- S&P 500 Index (SPY)
+- Dow Jones Index (DJ)
 
-```python
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# Membuat heatmap korelasi
-plt.figure(figsize=(24, 18))
-sns.heatmap(df.corr(), annot=True)
-plt.show()
-```
+### 4. Analisis Korelasi
+- Membuat heatmap korelasi antar seluruh fitur
+- Menghitung korelasi tiap fitur terhadap 'Adj Close'
+- Memisahkan variabel dengan korelasi positif dan negatif
 
 ![Heatmap Korelasi](images/heatmap_correlation.jpg)
 
-### 3. Preprocessing Data
+### 5. Perhitungan Indikator Teknikal
 
-#### **Normalisasi Data**
-Menggunakan MinMaxScaler untuk menormalisasi fitur-fitur dalam dataset ke rentang antara 0 dan 1.
-
-```python
-from sklearn.preprocessing import MinMaxScaler
-
-# Inisialisasi MinMaxScaler
-scaler = MinMaxScaler()
-
-# Normalisasi fitur
-feature_minmax_transform_data = scaler.fit_transform(df[feature_columns])
-```
-
-#### **Penghitungan Indikator Teknikal**
-Menghitung indikator teknikal seperti MACD, RSI, dan Bollinger Bands untuk menambahkan fitur baru.
+#### Moving Average Convergence Divergence (MACD)
 
 ```python
-# Menghitung MACD
+import numpy as np
+
 def calculate_MACD(df, nslow=26, nfast=12):
     emaslow = df.ewm(span=nslow, min_periods=nslow, adjust=True, ignore_na=False).mean()
     emafast = df.ewm(span=nfast, min_periods=nfast, adjust=True, ignore_na=False).mean()
@@ -139,298 +120,283 @@ def calculate_MACD(df, nslow=26, nfast=12):
     return dif, MACD
 ```
 
-### 4. Pemilihan Fitur
-
-### **Analisis Korelasi**
-Menggunakan matriks korelasi untuk mengidentifikasi fitur-fitur yang memiliki korelasi tinggi dengan target (harga emas).
+#### Relative Strength Index (RSI)
 
 ```python
-# Menghitung korelasi fitur dengan target
-corr_matrix = df.corr()
-coef = corr_matrix["Adj Close"].sort_values(ascending=False)
+def calculate_RSI(df, periods=14):
+    delta = df.diff()
+    up, down = delta.copy(), delta.copy()
+    up[up < 0] = 0
+    down[down > 0] = 0
+    rUp = up.ewm(com=periods, adjust=False).mean()
+    rDown = down.ewm(com=periods, adjust=False).mean().abs()
+    rsi = 100 - 100 / (1 + rUp / rDown)
+    return rsi
 ```
 
-#### **Seleksi Fitur**
-Menggunakan Lasso Regression untuk memilih fitur yang paling signifikan.
+#### Simple Moving Average (SMA)
 
 ```python
-from sklearn.linear_model import Lasso
-from sklearn.feature_selection import SelectFromModel
-
-# Seleksi fitur dengan Lasso
-lasso = Lasso(alpha=0.01)
-feature_sel_model = SelectFromModel(lasso)
-feature_sel_model.fit(X_train, y_train)
+def calculate_SMA(df, periods=15):
+    return df.rolling(window=periods, min_periods=periods, center=False).mean()
 ```
 
-### 5. Pembagian Data
-
-### **Pembagian Data Pelatihan dan Validasi**
-Data dibagi menjadi data pelatihan dan data validasi. Data validasi menggunakan 90 baris terakhir dari dataset.
+#### Bollinger Bands (BB)
 
 ```python
-# Membuat set validasi
+def calculate_BB(df, periods=15):
+    STD = df.rolling(window=periods, min_periods=periods, center=False).std()
+    SMA = calculate_SMA(df)
+    upper_band = SMA + (2 * STD)
+    lower_band = SMA - (2 * STD)
+    return upper_band, lower_band
+```
+
+#### Standar Deviasi
+
+```python
+def calculate_stdev(df, periods=5):
+    return df.rolling(periods).std()
+```
+
+### 6. Pembuatan Fitur Tambahan
+- Menghitung selisih **Open-Close** dan **High-Low**
+- Menambahkan semua indikator teknikal ke dataset utama
+- Menghapus 33 baris pertama yang mengandung nilai null akibat perhitungan indikator
+
+### 7. Normalisasi Data
+Menggunakan `MinMaxScaler` untuk menormalisasi seluruh fitur:
+
+```python
+from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+feature_minmax_transform_data = scaler.fit_transform(test[feature_columns])
+feature_minmax_transform = pd.DataFrame(columns=feature_columns, 
+                                      data=feature_minmax_transform_data, 
+                                      index=test.index)
+```
+
+### 8. Persiapan Data untuk Pemodelan
+- Membagi data menjadi fitur dan target (`Adj Close`)
+- Menggeser target array untuk memprediksi nilai hari ke **n+1**
+- Membuat set validasi menggunakan **90 hari terakhir**
+- Menghapus **90 baris terakhir** dari set pelatihan
+
+```python
 validation_X = feature_minmax_transform[-90:-1]
 validation_y = target_adj_close[-90:-1]
+feature_minmax_transform = feature_minmax_transform[:-90]
+target_adj_close = target_adj_close[:-90]
 ```
 
-#### **TimeSeriesSplit**
-Menggunakan TimeSeriesSplit untuk membagi data deret waktu menjadi beberapa fold.
-
-```python
-from sklearn.model_selection import TimeSeriesSplit
-
-# Inisialisasi TimeSeriesSplit
-tscv = TimeSeriesSplit(n_splits=5)
-```
-
-### **Ringkasan Tahap Data Preparation**
-Tahap Data Preparation meliputi:
-
-1. **Pengumpulan Data**: Memastikan data berasal dari sumber yang kredibel.
-2. **Eksplorasi Data**: Memahami pola dan hubungan antar fitur.
-3. **Preprocessing Data**: Normalisasi, penanganan missing values, dan transformasi fitur.
-4. **Pemilihan Fitur**: Menggunakan analisis korelasi dan seleksi fitur untuk memilih fitur yang paling signifikan.
-5. **Pembagian Data**: Membagi data menjadi data pelatihan dan validasi dengan menjaga urutan waktu.
-
-#### **Alasan Data Preparation**
-Tahap ini diperlukan untuk memastikan bahwa:
-- Data siap digunakan untuk pemodelan,
-- Meningkatkan kualitas data,
-- Mengurangi risiko overfitting atau underfitting pada model.
-
+---
 
 ## Modeling
 
-### Algoritma yang Digunakan:
-1. **Decision Tree Regressor**: Digunakan sebagai model benchmark untuk membandingkan performa model yang lebih kompleks.
-2. **Support Vector Regressor (SVR)**: Dengan kernel linear dan tuning hyperparameter untuk meningkatkan performa prediksi.
-3. **Random Forest Regressor**: Digunakan untuk membandingkan performa dengan model lain, dengan tuning hyperparameter untuk optimasi.
-4. **Lasso dan Ridge Regression**: Digunakan untuk regularisasi dan mencegah overfitting, dengan cross-validation untuk memilih parameter terbaik.
-5. **Bayesian Ridge Regression**: Digunakan untuk estimasi distribusi parameter model, memberikan insight lebih dalam tentang ketidakpastian model.
-6. **Gradient Boosting Regressor**: Digunakan untuk meningkatkan akurasi prediksi dengan menggabungkan banyak model pohon keputusan.
-7. **Stochastic Gradient Descent (SGD)**: Digunakan untuk optimisasi pada dataset besar dengan iterasi acak.
+### 1. Decision Tree Regressor
+**Cara Kerja:**  
+Membangun struktur pohon dengan membagi data secara rekursif berdasarkan fitur yang memberikan pemisahan terbaik.
 
-### Tahapan dan Parameter yang Digunakan:
+**Parameter:**  
+- `random_state=0` → Menjamin hasil yang konsisten dengan seed yang tetap.
+- `max_depth=None` → Tidak membatasi kedalaman pohon (default), berisiko overfitting.
+- `min_samples_split=2` → Minimum jumlah sampel yang dibutuhkan untuk membagi node.
+- `min_samples_leaf=1` → Minimum jumlah sampel dalam setiap leaf node.
 
-#### 1. Decision Tree Regressor
-- **Parameter Default**: Digunakan sebagai baseline.
-- **Validasi**: Menghitung RMSE dan R².
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Mudah diinterpretasi | Rentan overfitting |
+| Tidak memerlukan normalisasi data | Kurang stabil terhadap perubahan kecil data |
+| Cepat dalam prediksi | Performa buruk pada hubungan linear |
 
-```python
-# Membuat dan melatih model Decision Tree
-dt = DecisionTreeRegressor(random_state=0)
-benchmark_dt = dt.fit(X_train, y_train)
+### 2. Support Vector Regressor (SVR) Linear
+**Cara Kerja:**  
+Mencari hyperplane optimal dalam ruang fitur yang meminimalkan error prediksi.
 
-# Validasi hasil prediksi
-validate_result(benchmark_dt, 'Decision Tree Regression')
-```
+**Parameter:**  
+- `kernel='linear'` → Menggunakan kernel linear untuk menemukan hubungan langsung antara variabel independen dan target.
+- `C=1.0` → Parameter regulasi yang mengontrol trade-off antara kompleksitas model dan margin kesalahan.
+- `epsilon=0.1` → Toleransi error dalam prediksi, nilai lebih besar memperbolehkan lebih banyak error dalam margin epsilon.
 
-#### 2. Support Vector Regressor (SVR)
-- **Kernel**: Linear.
-- **Tuning Hyperparameter**: Menggunakan GridSearchCV untuk mencari kombinasi terbaik dari C dan epsilon.
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Efektif untuk high-dimensional space | Komputasi mahal untuk dataset besar |
+| Robust terhadap outlier | Sulit memilih kernel yang tepat |
+| Generalisasi baik dengan parameter tepat | Sensitif terhadap scaling data |
 
-```python
-# Tuning hyperparameter SVR
-linear_svr_parameters = {
-    'C': [0.5, 1.0, 10.0, 50.0],
-    'epsilon': [0, 0.1, 0.5, 0.7, 0.9],
-}
+### 3. Random Forest Regressor
+**Cara Kerja:**  
+Membangun banyak pohon keputusan dengan teknik bagging.
 
-lsvr_grid_search_feat = GridSearchCV(
-    estimator=linear_svr_clf_feat,
-    param_grid=linear_svr_parameters,
-    cv=ts_split,
-)
-lsvr_grid_search_feat.fit(X_train, y_train)
+**Parameter:**  
+- `n_estimators=50` → Jumlah pohon dalam hutan, lebih banyak dapat meningkatkan akurasi tetapi memperpanjang waktu pelatihan.
+- `random_state=0` → Menjamin replikasi hasil dengan seed tetap.
 
-# Validasi hasil prediksi
-validate_result(lsvr_grid_search_feat, 'Linear SVR GS All Feat')
-```
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Mengurangi overfitting | Waktu training lebih lama |
+| Dapat menangani missing values | Kurang interpretatif |
+| Robust terhadap noise data | Memori besar untuk banyak pohon |
 
-#### 3. Random Forest Regressor
-- **Tuning Hyperparameter**: Menggunakan GridSearchCV untuk mencari kombinasi terbaik dari n_estimators, max_features, dan max_depth.
+### 4. Lasso Regression
+**Cara Kerja:**  
+Regresi linear dengan penalti L1 untuk seleksi fitur.
 
-```python
-# Tuning hyperparameter Random Forest
-random_forest_parameters = {
-    'n_estimators': [10, 15, 20, 50, 100],
-    'max_features': ['auto', 'sqrt', 'log2'],
-    'max_depth': [2, 3, 5, 7, 10],
-}
+**Parameter:**  
+- `n_alphas=1000` → Jumlah nilai alpha yang diuji untuk regulasi optimal.
+- `max_iter=3000` → Maksimum jumlah iterasi untuk konvergensi.
 
-grid_search_RF_feat = GridSearchCV(
-    estimator=random_forest_clf_feat,
-    param_grid=random_forest_parameters,
-    cv=ts_split,
-)
-grid_search_RF_feat.fit(X_train, y_train)
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Seleksi fitur otomatis | Tidak stabil pada fitur berkorelasi |
+| Baik untuk high-dimensional data | Sulit memilih alpha optimal |
+| Interpretasi mudah | Underfit jika terlalu banyak fitur relevan |
 
-# Validasi hasil prediksi
-validate_result(grid_search_RF_feat, 'RandomForest GS')
-```
+### 5. Ridge Regression
+**Cara Kerja:**  
+Regresi linear dengan penalti L2 untuk menangani multikolinearitas.
 
-#### 4. Lasso dan Ridge Regression
-- **Lasso**: Menggunakan regularisasi L1.
-- **Ridge**: Menggunakan regularisasi L2.
-- **Cross-Validation**: Digunakan untuk memilih parameter terbaik.
+**Parameter:**  
+- `gcv_mode='auto'` → Memilih metode pencarian parameter alpha terbaik secara otomatis.
 
-```python
-# Lasso Regression dengan Cross-Validation
-lasso_clf = LassoCV(n_alphas=1000, max_iter=3000, random_state=0)
-lasso_clf_feat = lasso_clf.fit(X_train, y_train)
-validate_result(lasso_clf_feat, 'LassoCV')
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Stabil untuk data berkorelasi | Tidak melakukan seleksi fitur |
+| Mencegah overfitting | Sensitif terhadap outlier |
+| Performa baik pada data noisy | Kurang efektif untuk feature selection |
 
-# Ridge Regression dengan Cross-Validation
-ridge_clf = RidgeCV(gcv_mode='auto')
-ridge_clf_feat = ridge_clf.fit(X_train, y_train)
-validate_result(ridge_clf_feat, 'RidgeCV')
-```
+### 6. Bayesian Ridge Regression
+**Cara Kerja:**  
+Pendekatan Bayesian yang memodelkan distribusi probabilitas parameter.
 
-#### 5. Bayesian Ridge Regression
-- **Pendekatan Bayesian**: Menaksir distribusi parameter model.
+**Parameter:**  
+- `alpha_1=1e-6` → Parameter prior distribusi gamma untuk regulasi weight.
+- `alpha_2=1e-6` → Parameter prior distribusi gamma untuk varians noise data.
 
-```python
-# Bayesian Ridge Regression
-bay = linear_model.BayesianRidge()
-bay_feat = bay.fit(X_train, y_train)
-validate_result(bay_feat, 'Bayesian')
-```
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Memberikan interval prediksi | Komputasi lebih intensif |
+| Otomatis menangani overfitting | Sulit menginterpretasikan prior |
+| Robust terhadap small datasets | Hyperparameter sensitif |
 
-#### 6. Gradient Boosting Regressor
-- **Parameter**: n_estimators=70, learning_rate=0.1, max_depth=4.
+### 7. Gradient Boosting Regressor
+**Cara Kerja:**  
+Membangun model secara bertahap dengan mengoreksi residual.
 
-```python
-# Gradient Boosting Regressor
-regr = GradientBoostingRegressor(
-    n_estimators=70, learning_rate=0.1, max_depth=4, random_state=0, loss='ls'
-)
-GB_feat = regr.fit(X_train, y_train)
-validate_result(GB_feat, 'Gradient Boosting')
-```
+**Parameter:**  
+- `n_estimators=70` → Jumlah pohon dalam boosting, lebih banyak bisa meningkatkan akurasi tetapi memperpanjang waktu pelatihan.
+- `learning_rate=0.1` → Mengontrol kontribusi setiap pohon dalam model akhir.
+- `max_depth=4` → Membatasi kedalaman pohon untuk menghindari overfitting.
 
-#### 7. Stochastic Gradient Descent (SGD)
-- **Parameter**: max_iter=1000, tol=1e-3, loss='squared_epsilon_insensitive'.
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Akurasi tinggi | Sensitif terhadap overfitting |
+| Fleksibel dengan berbagai loss function | Waktu training lama |
+| Handles mixed data types | Hyperparameter sensitif |
 
-```python
-# Stochastic Gradient Descent
-sgd = SGDRegressor(
-    max_iter=1000, tol=1e-3, loss='squared_epsilon_insensitive', penalty='l1', alpha=0.1
-)
-sgd_feat = sgd.fit(X_train, y_train)
-validate_result(sgd_feat, 'SGD')
-```
+### 8. SGD Regressor
+**Cara Kerja:**  
+Optimisasi iteratif dengan gradient descent stokastik.
 
-### Kelebihan dan Kekurangan Algoritma:
+**Parameter:**  
+- `max_iter=1000` → Jumlah iterasi maksimum untuk konvergensi.
+- `tol=1e-3` → Ambang batas perubahan error untuk berhenti iterasi lebih awal.
 
-| Algoritma | Kelebihan | Kekurangan |
-|-----------|-----------|-----------|
-| Decision Tree | Mudah diinterpretasi, tidak memerlukan normalisasi data. | Rentan terhadap overfitting, terutama pada dataset besar. |
-| SVR | Efektif untuk dataset kecil, dapat menangani data non-linear. | Memerlukan tuning hyperparameter, komputasi mahal untuk dataset besar. |
-| Random Forest | Robust terhadap overfitting, dapat menangani banyak fitur. | Memerlukan waktu komputasi lebih lama, kurang interpretatif. |
-| Lasso dan Ridge | Efektif untuk regularisasi, mencegah overfitting. | Memerlukan tuning parameter, Lasso dapat menghasilkan koefisien nol. |
-| Bayesian Ridge | Memberikan estimasi distribusi parameter, berguna untuk analisis ketidakpastian. | Komputasi intensif, terutama untuk dataset besar. |
-| Gradient Boosting | Akurat, dapat menangani data non-linear. | Memerlukan tuning hyperparameter, komputasi mahal. |
-| SGD | Efisien untuk dataset besar, dapat digunakan dengan berbagai fungsi kerugian. | Sensitif terhadap scaling data, memerlukan tuning parameter. |
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Efisien untuk data besar | Sensitif terhadap feature scaling |
+| Fleksibel dengan berbagai regularisasi | Sulit memilih learning rate |
+| Dapat handle online learning | Konvergensi sulit diverifikasi |
 
+### 9. Ensemble Model
+**Cara Kerja:**  
+Menggabungkan prediksi dari Lasso, Bayesian Ridge, dan Ridge Regression.
 
-### Improvement Model:
+**Parameter:**  
+Tidak ada parameter tambahan selain model penyusun.
 
-- **Tuning Hyperparameter**:
-  - Menggunakan GridSearchCV untuk mencari kombinasi hyperparameter terbaik pada model SVR dan Random Forest.
-  - Parameter yang di-tuning termasuk C, epsilon untuk SVR, dan n_estimators, max_features, max_depth untuk Random Forest.
-
-- **Seleksi Fitur**:
-  - Menggunakan SelectFromModel dengan Lasso untuk memilih fitur yang paling signifikan.
-  - Fitur yang dipilih digunakan untuk melatih model dan meningkatkan performa prediksi.
-
-```python
-# Seleksi Fitur dengan Lasso
-sfm = SelectFromModel(lasso_clf_feat)
-sfm.fit(feature_minmax_transform, target_adj_close.values.ravel())
-feature_selected = feature_minmax_transform[sfm.get_support()]
-```
-
-- **Pemilihan Model Terbaik**:
-  - **Lasso Regression** dipilih sebagai model terbaik karena memberikan nilai RMSE terendah (0.709) dan R² tertinggi (0.884) pada data validasi.
-  - **Alasan Pemilihan**: Lasso menunjukkan performa yang konsisten baik pada data training maupun validasi, serta mampu mengurangi overfitting dengan regularisasi L1.
+| Kelebihan | Kekurangan |
+|-----------|------------|
+| Meningkatkan akurasi | Kehilangan interpretabilitas |
+| Mengurangi overfitting | Komputasi lebih intensif |
+| Robust terhadap noise | Kompleksitas maintenance tinggi |
 
 ---
 
 ## Evaluation
 
-### Metrik Evaluasi:
-- **RMSE (Root Mean Squared Error)**: Mengukur perbedaan antara nilai prediksi dan nilai aktual. Formula RMSE adalah:
+### Metrik Evaluasi
+Dua metrik utama digunakan untuk mengevaluasi performa model:
 
-  `RMSE = sqrt( (1/n) * Σ(y - ŷ)² )`
+1. **RMSE (Root Mean Squared Error)**  
+   - Mengukur rata-rata kesalahan prediksi dalam satuan yang sama dengan variabel target
+   - Semakin kecil nilai semakin baik
+   - Formula: `√(1/n * Σ(aktual - prediksi)²)`
 
-  Di mana:
-  - `y` adalah nilai aktual.
-  - `ŷ` adalah nilai prediksi.
-  - `n` adalah jumlah data.
+2. **R² Score (Koefisien Determinasi)**  
+   - Mengukur proporsi variasi dalam data yang dapat dijelaskan oleh model
+   - Rentang nilai 0-1 (semakin mendekati 1 semakin baik)
+   - Formula: `1 - (Σ(aktual - prediksi)² / Σ(aktual - rata_rata)²)`
 
-- **R² (Coefficient of Determination)**: Mengukur seberapa baik model dalam menjelaskan variasi data. Formula R² adalah:
+### Analisis Performa Model
+Berdasarkan problem statements bisnis, berikut evaluasi model:
 
-  `R² = 1 - ( Σ(y - ŷ)² / Σ(y - ȳ)² )`
+#### 1. Prediksi Harga Emas (Goal 2)
+| Model                | RMSE   | R² Score | Keterangan |
+|----------------------|--------|----------|------------|
+| Decision Tree        | 1.217  | 0.659    | Benchmark  |
+| Linear SVR           | 0.814  | 0.847    |            |
+| Random Forest        | 0.808  | 0.850    |            |
+| **Lasso**            | **0.712** | **0.883**| **Optimal**|
+| Ridge                | 0.719  | 0.881    |            |
+| Bayesian Ridge       | 0.720  | 0.881    |            |
+| **Ensemble**         | **0.701** | **0.887**| **Terbaik**|
 
-  Di mana:
-  - `y` adalah nilai aktual.
-  - `ŷ` adalah nilai prediksi.
-  - `ȳ` adalah rata-rata nilai aktual.
+#### 2. Signifikansi Fitur (Goal 3)
+- Fitur paling berpengaruh berdasarkan Lasso:
+  1. Harga pembukaan (Open)
+  2. Harga tertinggi (High) 
+  3. Harga terendah (Low)
+  4. Trend minyak mentah (OF_Trend)
+  5. Trend USD bonds (USB_Trend)
 
+#### 3. Pengaruh Faktor Ekonomi (Goal 1)
+Analisis korelasi menunjukkan:
+- Indeks saham (SPY/DJ) berkorelasi positif moderat (0.4-0.6)
+- Nilai tukar USD (USDI) berkorelasi negatif (-0.3)
+- Harga minyak (USO) berkorelasi positif lemah (0.2)
 
-### Hasil Evaluasi:
-- **Decision Tree**:
-  - **RMSE**: 1.2166871700124942
-  - **R² Score**: 0.6590361406118342
-- **Linear SVR**:
-  - **RMSE**: 0.8136915781869215
-  - **R² Score**: 0.8474998982807777
-- **Random Forest**:
-  - **RMSE**: 0.8078828885891266
-  - **R² Score**: 0.8496694277726002
-- **Lasso**:
-  - **RMSE**: 0.7117047240324116
-  - **R² Score**: 0.8833324203076942
-- **Ridge**:
-  - **RMSE**: 0.7186272523103391
-  - **R² Score**: 0.8810518047764179
-- **Bayesian Ridge**:
-  - **RMSE**: 0.7195639601669016
-  - **R² Score**: 0.8807415122717521
-- **Gradient Boosting**:
-  - **RMSE**: 0.8094931831292806
-  - **R² Score**: 0.8490695443986875
-- **SGD**:
-  - **RMSE**: 0.9141489449988743
-  - **R² Score**: 0.8075205291328325
-- **Ensemble Model**:
-  - **RMSE**: 0.7007271848703037
-  - **R² Score**: 0.8869036929493133
-
-### Hasil Prediksi Sebelum Feature Selection
-Berikut adalah grafik hasil prediksi dari model sebelum dilakukan seleksi fitur:
-
+### Visualisasi Kunci
+#### Performa Model Sebelum Seleksi Fitur
 ![Hasil Prediksi Sebelum Feature Selection](images/prediction_before_fs.jpg)
+*Gambar 1: Perbandingan prediksi vs aktual sebelum seleksi fitur*
 
-### Perbandingan RMSE Sebelum Feature Selection
-Berikut adalah grafik perbandingan RMSE dari model-model sebelum dilakukan seleksi fitur:
+![Perbandingan RMSE Sebelum Feature Selection](images/rmse_before_fs.jpg)
+*Gambar 2: Perbandingan RMSE antar model sebelum seleksi fitur*
 
-![Perbandingan RMSE Sebelum Feature Selection](images/rmse_after_fs.jpg)
-
-### Hasil Prediksi Setelah Feature Selection
-Berikut adalah grafik hasil prediksi dari model setelah dilakukan seleksi fitur:
-
+#### Performa Model Setelah Seleksi Fitur
 ![Hasil Prediksi Setelah Feature Selection](images/prediction_after_fs.jpg)
-
-### Perbandingan RMSE Setelah Feature Selection
-Berikut adalah grafik perbandingan RMSE dari model-model setelah dilakukan seleksi fitur:
+*Gambar 3: Perbandingan prediksi vs aktual setelah seleksi fitur*
 
 ![Perbandingan RMSE Setelah Feature Selection](images/rmse_after_fs.jpg)
+*Gambar 4: Perbandingan RMSE antar model setelah seleksi fitur*
 
-### Kesimpulan:
-- **Model Terbaik**: **Ensemble Model** dengan kombinasi Lasso, Bayesian Ridge, dan Ridge menunjukkan performa terbaik dengan **RMSE 0.70** dan **R² Score 0.886**.
-- **Model dengan Fitur Terpilih**: **Lasso** dengan fitur terpilih menunjukkan performa yang sangat baik dengan **RMSE 0.709** dan **R² Score 0.884**.
-- **Rekomendasi**: **Ensemble Model** dan **Lasso** dengan fitur terpilih dapat digunakan sebagai solusi terbaik untuk prediksi harga emas.
+### Rekomendasi Bisnis
+Berdasarkan evaluasi:
+
+1. **Model Produksi**  
+   - Gunakan **Ensemble Model** (RMSE 0.701) untuk prediksi harian
+   - **Lasso Regression** (RMSE 0.712) sebagai alternatif lebih sederhana
+
+2. **Faktor Pengaruh Utama**  
+   Fokus monitor:
+   - Harga pembukaan emas
+   - Trend minyak mentah
+   - Pergerakan USD bonds
+
+3. **Improvement**  
+   - Tambahkan data makroekonomi terkini
+   - Eksperimen dengan model sequence-based (LSTM) untuk capture pola temporal
 
 ---
