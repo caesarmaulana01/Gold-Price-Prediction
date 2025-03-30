@@ -59,135 +59,226 @@ Fitur yang dikumpulkan mencakup berbagai faktor ekonomi seperti **harga minyak m
 - **USO_Open, USO_High, USO_Low, USO_Close, USO_Adj Close**: Harga ETF minyak.
 
 
+### Pengaruh Harga Indeks Terhadap Harga Emas
+Analisis ini bertujuan untuk memahami hubungan antara harga emas (GLD) dan indeks saham seperti S&P 500 (SPY) serta Dow Jones (DJ). Tujuan utama adalah mengidentifikasi pola pergerakan harga emas seiring dengan perubahan harga indeks saham.
+
+Langkah-langkah yang dilakukan:
+1. Mengambil data harga penutupan yang telah disesuaikan (Adjusted Close) untuk GLD, SPY, dan DJ.
+2. Menyusun DataFrame baru yang berisi ketiga harga tersebut.
+3. Membuat visualisasi dalam bentuk plot untuk memahami tren harga secara keseluruhan.
+4. Menambahkan label sumbu dan legenda agar grafik lebih informatif.
+5. Menampilkan plot hasil analisis.
+
+```python
+GLD_adj_close = df['Adj Close']
+```
+
+### Menghitung Return Harian dari Semua Fitur
+Return harian dihitung untuk memahami perubahan relatif harga suatu aset dari satu hari ke hari berikutnya. Rumus perhitungannya adalah:
+
+\[
+\text{Return harian} = \frac{\text{Harga hari ini}}{\text{Harga hari sebelumnya}} - 1
+\]
+
+Langkah-langkah yang dilakukan:
+1. Mengambil data harga Adjusted Close untuk berbagai aset seperti GLD, SPY, DJ, minyak mentah (USO), dan logam lainnya.
+2. Menggunakan fungsi untuk menghitung return harian berdasarkan harga hari ini dibandingkan dengan harga sebelumnya.
+3. Menyusun DataFrame yang berisi return harian semua fitur.
+4. Membuat visualisasi return harian untuk 100 data terakhir.
+5. Menampilkan grafik untuk analisis pergerakan return harian.
+
+```python
+def compute_daily_returns(df):
+    return (df / df.shift(1)) - 1
+```
+
+### Menghitung Return Harian dari Indeks Saham
+Tujuan dari analisis ini adalah memahami volatilitas harian dari indeks saham yang relevan dengan harga emas, seperti **Gold ETF (GLD), S&P 500 (SPY), dan Dow Jones (DJ)**.
+
+Langkah-langkah yang dilakukan:
+1. Menyusun DataFrame untuk return harian indeks saham.
+2. Membuat visualisasi return harian 100 data terakhir untuk melihat pola pergerakan harga.
+3. Menampilkan grafik untuk analisis lebih lanjut.
+
+```python
+df_s = pd.DataFrame({'GLD': GLD_daily_return, 'SPY': SPY_daily_return, 'DJ': DJ_adj_return})
+```
+
+### Scatterplot untuk Hubungan Antar Fitur
+Scatterplot digunakan untuk memahami hubungan antara harga emas dan faktor ekonomi lainnya.
+
+Langkah-langkah yang dilakukan:
+1. Membuat scatterplot antara harga emas dan berbagai fitur lainnya seperti indeks saham, harga minyak, dan harga logam lainnya.
+2. Memvisualisasikan hubungan ini untuk melihat apakah ada pola korelasi tertentu.
+3. Menampilkan grafik untuk analisis lebih lanjut.
+
+```python
+df_d.plot(kind='scatter', x='SPY', y='GLD', title='Hubungan antara SPY dan GLD')
+```
+
+### Statistical Measures (Mean, Standard Deviation, Kurtosis)
+Statistik deskriptif digunakan untuk memahami distribusi data return harian, termasuk **mean**, **standard deviation**, dan **kurtosis**.
+
+- **Mean**: Rata-rata return harian.
+- **Standard Deviation**: Ukuran volatilitas return harian.
+- **Kurtosis**: Mengukur keparahan ekor distribusi data.
+
+Langkah-langkah yang dilakukan:
+1. Menghitung nilai mean, standard deviation, dan kurtosis untuk setiap fitur return harian.
+2. Membuat histogram untuk memvisualisasikan distribusi return harian.
+3. Menambahkan garis vertikal pada histogram untuk menunjukkan nilai rata-rata dan deviasi standar.
+4. Menampilkan grafik hasil analisis.
+
+```python
+mean = df_d['GLD'].mean()
+std = df_d['GLD'].std()
+kurt = df_d['GLD'].kurtosis()
+```
+
+### Plotting Correlation Matrix
+Matriks korelasi digunakan untuk memahami hubungan antar fitur dalam dataset.
+
+Langkah-langkah yang dilakukan:
+1. Menghitung korelasi antara semua fitur dalam dataset.
+2. Membuat heatmap untuk memvisualisasikan korelasi antar fitur.
+3. Menganalisis fitur mana yang memiliki korelasi tinggi atau rendah terhadap harga emas.
+4. Menampilkan hasil dalam bentuk grafik bar untuk mempermudah interpretasi.
+
+```python
+sns.heatmap(df.corr(), annot=True)
+```
+
+![Heatmap Korelasi](images/heatmap_correlation.jpg)
+
+### Plotting Indikator Teknikal
+Analisis indikator teknikal membantu memahami tren harga emas dengan menggunakan beberapa metode seperti:
+
+- **Simple Moving Average (SMA)**: Rata-rata pergerakan harga dalam jangka waktu tertentu.
+- **Bollinger Bands (BB)**: Mengukur volatilitas harga.
+- **Moving Average Convergence Divergence (MACD)**: Menentukan arah dan kekuatan tren harga.
+- **Relative Strength Index (RSI)**: Mengidentifikasi kondisi overbought atau oversold.
+- **Standard Deviation (STDEV)**: Mengukur sebaran harga terhadap rata-rata.
+
+Langkah-langkah yang dilakukan:
+1. Menghitung indikator teknikal untuk GLD.
+2. Membuat plot untuk setiap indikator.
+3. Menampilkan hasil analisis teknikal dalam bentuk visualisasi.
+
+```python
+SMA_GLD = calculate_SMA(GLD_adj_close)
+```
+
+### Menghitung Selisih Open-Close dan High-Low
+Selisih antara harga pembukaan dan penutupan serta harga tertinggi dan terendah dapat memberikan wawasan tentang volatilitas harian.
+
+Langkah-langkah yang dilakukan:
+1. Menghitung selisih harga Open-Close.
+2. Menghitung selisih harga High-Low.
+3. Membuat plot untuk memahami pola volatilitas harian.
+4. Menampilkan hasil dalam bentuk grafik.
+
+```python
+Open_Close = df.Open - df.Close
+High_Low = df.High - df.Low
+```
+
 ---
 
 ## Data Preparation
 
-### 1. Ekstraksi dan Analisis Data Awal
-- Mengambil data harga penutupan yang disesuaikan (Adjusted Close) untuk:
-  - Emas (GLD)
-  - S&P 500 Index (SPY)
-  - Dow Jones Index (DJ)
-- Membuat visualisasi hubungan antara harga emas dan indeks saham
-
-### 2. Perhitungan Return Harian
-Mengimplementasikan fungsi untuk menghitung return harian:
-
+### 1. Mengambil data harga penutupan yang disesuaikan (*Adjusted Close*) dari berbagai sumber
 ```python
-import pandas as pd
-
-def compute_daily_returns(df):
-    daily_return = (df / df.shift(1)) - 1
-    daily_return.iloc[0] = 0  # Menghindari NaN di baris pertama
-    return daily_return
+GLD_adj_close = df['Adj Close']
 ```
 
-Dihitung untuk seluruh fitur:
-- GLD, SPY, DJ, EG, USO, GDX, EU, OF, SF, OS, USB, PLT, PLD, RHO, USDI
+### 2. Menghitung indikator teknikal
 
-Dibuat visualisasi return harian untuk 100 record terakhir.
-
-### 3. Analisis Statistik
-Menghitung statistik utama untuk return harian:
-- **Mean**
-- **Standard deviation**
-- **Kurtosis**
-
-Dilakukan untuk:
-- Gold ETF (GLD)
-- S&P 500 Index (SPY)
-- Dow Jones Index (DJ)
-
-### 4. Analisis Korelasi
-- Membuat heatmap korelasi antar seluruh fitur
-- Menghitung korelasi tiap fitur terhadap 'Adj Close'
-- Memisahkan variabel dengan korelasi positif dan negatif
-
-![Heatmap Korelasi](images/heatmap_correlation.jpg)
-
-### 5. Perhitungan Indikator Teknikal
-
-#### Moving Average Convergence Divergence (MACD)
-
+#### a. Menghitung Simple Moving Average (SMA)
 ```python
-import numpy as np
-
-def calculate_MACD(df, nslow=26, nfast=12):
-    emaslow = df.ewm(span=nslow, min_periods=nslow, adjust=True, ignore_na=False).mean()
-    emafast = df.ewm(span=nfast, min_periods=nfast, adjust=True, ignore_na=False).mean()
-    dif = emafast - emaslow
-    MACD = dif.ewm(span=9, min_periods=9, adjust=True, ignore_na=False).mean()
-    return dif, MACD
+SMA_GLD = df['Adj Close'].rolling(window=15).mean()
 ```
 
-#### Relative Strength Index (RSI)
-
+#### b. Menghitung Moving Average Convergence Divergence (MACD)
 ```python
-def calculate_RSI(df, periods=14):
-    delta = df.diff()
-    up, down = delta.copy(), delta.copy()
-    up[up < 0] = 0
-    down[down > 0] = 0
-    rUp = up.ewm(com=periods, adjust=False).mean()
-    rDown = down.ewm(com=periods, adjust=False).mean().abs()
-    rsi = 100 - 100 / (1 + rUp / rDown)
-    return rsi
+DIF, MACD = calculate_MACD(df['Adj Close'])
 ```
 
-#### Simple Moving Average (SMA)
-
+#### c. Menghitung Relative Strength Index (RSI)
 ```python
-def calculate_SMA(df, periods=15):
-    return df.rolling(window=periods, min_periods=periods, center=False).mean()
+RSI = calculate_RSI(df['Adj Close'])
 ```
 
-#### Bollinger Bands (BB)
-
+#### d. Menghitung Bollinger Bands (BB)
 ```python
-def calculate_BB(df, periods=15):
-    STD = df.rolling(window=periods, min_periods=periods, center=False).std()
-    SMA = calculate_SMA(df)
-    upper_band = SMA + (2 * STD)
-    lower_band = SMA - (2 * STD)
-    return upper_band, lower_band
+upper_band, lower_band = calculate_BB(df['Adj Close'])
 ```
 
-#### Standar Deviasi
-
+#### e. Menghitung Standar Deviasi (STDEV)
 ```python
-def calculate_stdev(df, periods=5):
-    return df.rolling(periods).std()
+STDEV = df['Adj Close'].rolling(window=5).std()
 ```
 
-### 6. Pembuatan Fitur Tambahan
-- Menghitung selisih **Open-Close** dan **High-Low**
-- Menambahkan semua indikator teknikal ke dataset utama
-- Menghapus 33 baris pertama yang mengandung nilai null akibat perhitungan indikator
-
-### 7. Normalisasi Data
-Menggunakan `MinMaxScaler` untuk menormalisasi seluruh fitur:
-
+### 3. Menghitung selisih harga *Open-Close* dan *High-Low*
 ```python
-from sklearn.preprocessing import MinMaxScaler
+Open_Close = df['Open'] - df['Close']
+High_Low = df['High'] - df['Low']
+```
 
+### 4. Menyusun dataset dengan menambahkan indikator teknikal sebagai fitur
+```python
+test = df.copy()
+test['SMA'] = SMA_GLD
+test['Upper_band'] = upper_band
+test['Lower_band'] = lower_band
+test['DIF'] = DIF
+test['MACD'] = MACD
+test['RSI'] = RSI
+test['STDEV'] = STDEV
+test['Open_Close'] = Open_Close
+test['High_Low'] = High_Low
+```
+
+### 5. Menghapus baris awal yang memiliki nilai *null* akibat penghitungan indikator
+```python
+test = test[33:]
+```
+
+### 6. Menentukan kolom target (*Adj Close*)
+```python
+target_adj_close = test[['Adj Close']]
+```
+
+### 7. Memilih kolom fitur yang akan digunakan
+```python
+feature_columns = ['Open', 'High', 'Low', 'Volume', 'SMA', 'Upper_band', 'Lower_band', 'DIF', 'MACD', 'RSI', 'STDEV', 'Open_Close', 'High_Low']
+```
+
+### 8. Normalisasi data fitur menggunakan *MinMaxScaler*
+```python
 scaler = MinMaxScaler()
 feature_minmax_transform_data = scaler.fit_transform(test[feature_columns])
-feature_minmax_transform = pd.DataFrame(columns=feature_columns, 
-                                      data=feature_minmax_transform_data, 
-                                      index=test.index)
 ```
 
-### 8. Persiapan Data untuk Pemodelan
-- Membagi data menjadi fitur dan target (`Adj Close`)
-- Menggeser target array untuk memprediksi nilai hari ke **n+1**
-- Membuat set validasi menggunakan **90 hari terakhir**
-- Menghapus **90 baris terakhir** dari set pelatihan
-
+### 9. Menggeser target satu hari ke depan untuk prediksi harga di hari berikutnya
 ```python
-validation_X = feature_minmax_transform[-90:-1]
+target_adj_close = target_adj_close.shift(-1)
+```
+
+### 10. Membagi dataset menjadi set pelatihan dan validasi (90 hari terakhir untuk validasi)
+```python
 validation_y = target_adj_close[-90:-1]
+validation_X = feature_minmax_transform[-90:-1]
+```
+
+### 11. Menghapus data validasi dari dataset utama
+```python
 feature_minmax_transform = feature_minmax_transform[:-90]
 target_adj_close = target_adj_close[:-90]
+```
+
+### 12. Melakukan pembagian data pelatihan dan pengujian menggunakan *TimeSeriesSplit*
+```python
+ts_split = TimeSeriesSplit(n_splits=10)
 ```
 
 ---
@@ -378,13 +469,13 @@ Berdasarkan problem statements bisnis, berikut evaluasi model:
 | Bayesian Ridge       | 0.720  | 0.881    |            |
 | **Ensemble**         | **0.701** | **0.887**| **Terbaik**|
 
-#### 2. Signifikansi Fitur (Goal 3)
-- Fitur paling berpengaruh berdasarkan Lasso:
-  1. Harga pembukaan (Open)
-  2. Harga tertinggi (High) 
-  3. Harga terendah (Low)
-  4. Trend minyak mentah (OF_Trend)
-  5. Trend USD bonds (USB_Trend)
+#### 2. Signifikansi Fitur (Goal 3)  
+- Fitur paling berpengaruh berdasarkan Lasso:  
+  1. Harga tertinggi (High) – **27.17**  
+  2. Harga pembukaan (Open) – **23.47**  
+  3. Harga terendah (Low) – **17.31**  
+  4. Selisih harga pembukaan & penutupan (Open_Close) – **-4.72** (pengaruh negatif)  
+  5. Harga penutupan GDX (GDX_Close) – **3.33**  
 
 #### 3. Pengaruh Faktor Ekonomi (Goal 1)
 Analisis korelasi menunjukkan:
