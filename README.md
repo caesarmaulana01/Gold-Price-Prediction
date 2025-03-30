@@ -186,45 +186,56 @@ High_Low = df.High - df.Low
 
 ## Data Preparation
 
-### 1. Mengambil data harga penutupan yang disesuaikan (*Adjusted Close*) dari berbagai sumber
+Tahap ini bertujuan untuk mempersiapkan data sebelum digunakan dalam model prediksi, termasuk pengambilan data harga, perhitungan indikator teknikal, serta pembagian dataset untuk pelatihan dan validasi.
+
+### 1. Mengambil Data Harga Penutupan yang Disesuaikan (*Adjusted Close*)
+Data harga penutupan yang disesuaikan digunakan sebagai target prediksi.
 ```python
 GLD_adj_close = df['Adj Close']
 ```
 
-### 2. Menghitung indikator teknikal
+### 2. Menghitung Indikator Teknikal
+Indikator teknikal digunakan sebagai fitur tambahan dalam analisis data.
 
 #### a. Menghitung Simple Moving Average (SMA)
+SMA dihitung sebagai rata-rata harga penutupan dalam periode tertentu (misalnya 15 hari).
 ```python
 SMA_GLD = df['Adj Close'].rolling(window=15).mean()
 ```
 
 #### b. Menghitung Moving Average Convergence Divergence (MACD)
+MACD digunakan untuk mengidentifikasi tren dan momentum harga.
 ```python
 DIF, MACD = calculate_MACD(df['Adj Close'])
 ```
 
 #### c. Menghitung Relative Strength Index (RSI)
+RSI mengukur kekuatan tren harga dengan membandingkan kenaikan dan penurunan harga dalam periode tertentu.
 ```python
 RSI = calculate_RSI(df['Adj Close'])
 ```
 
 #### d. Menghitung Bollinger Bands (BB)
+Bollinger Bands digunakan untuk mengidentifikasi volatilitas harga.
 ```python
 upper_band, lower_band = calculate_BB(df['Adj Close'])
 ```
 
 #### e. Menghitung Standar Deviasi (STDEV)
+Standar deviasi digunakan untuk mengukur volatilitas harga dalam periode tertentu.
 ```python
 STDEV = df['Adj Close'].rolling(window=5).std()
 ```
 
-### 3. Menghitung selisih harga *Open-Close* dan *High-Low*
+### 3. Menghitung Selisih Harga *Open-Close* dan *High-Low*
+Selisih ini digunakan untuk memahami fluktuasi harga harian.
 ```python
 Open_Close = df['Open'] - df['Close']
 High_Low = df['High'] - df['Low']
 ```
 
-### 4. Menyusun dataset dengan menambahkan indikator teknikal sebagai fitur
+### 4. Menyusun Dataset dengan Menambahkan Indikator Teknikal sebagai Fitur
+Semua fitur teknikal yang telah dihitung ditambahkan ke dalam dataset.
 ```python
 test = df.copy()
 test['SMA'] = SMA_GLD
@@ -238,45 +249,53 @@ test['Open_Close'] = Open_Close
 test['High_Low'] = High_Low
 ```
 
-### 5. Menghapus baris awal yang memiliki nilai *null* akibat penghitungan indikator
+### 5. Menghapus Baris Awal yang Memiliki Nilai *Null*
+Karena adanya perhitungan indikator teknikal, beberapa baris awal akan memiliki nilai *null* dan perlu dihapus.
 ```python
 test = test[33:]
 ```
 
-### 6. Menentukan kolom target (*Adj Close*)
+### 6. Menentukan Kolom Target (*Adj Close*)
+Kolom target yang akan diprediksi adalah harga penutupan yang disesuaikan.
 ```python
 target_adj_close = test[['Adj Close']]
 ```
 
-### 7. Memilih kolom fitur yang akan digunakan
+### 7. Memilih Kolom Fitur yang Akan Digunakan
+Fitur-fitur yang digunakan dalam model diambil dari dataset.
 ```python
 feature_columns = ['Open', 'High', 'Low', 'Volume', 'SMA', 'Upper_band', 'Lower_band', 'DIF', 'MACD', 'RSI', 'STDEV', 'Open_Close', 'High_Low']
 ```
 
-### 8. Normalisasi data fitur menggunakan *MinMaxScaler*
+### 8. Normalisasi Data Fitur Menggunakan *MinMaxScaler*
+Normalisasi dilakukan agar nilai fitur berada dalam skala yang sama.
 ```python
 scaler = MinMaxScaler()
 feature_minmax_transform_data = scaler.fit_transform(test[feature_columns])
 ```
 
-### 9. Menggeser target satu hari ke depan untuk prediksi harga di hari berikutnya
+### 9. Menggeser Target Satu Hari ke Depan
+Target digeser satu hari ke depan untuk membuat model memprediksi harga di hari berikutnya.
 ```python
 target_adj_close = target_adj_close.shift(-1)
 ```
 
-### 10. Membagi dataset menjadi set pelatihan dan validasi (90 hari terakhir untuk validasi)
+### 10. Membagi Dataset Menjadi Set Pelatihan dan Validasi
+Sebanyak 90 hari terakhir digunakan untuk validasi model.
 ```python
 validation_y = target_adj_close[-90:-1]
 validation_X = feature_minmax_transform[-90:-1]
 ```
 
-### 11. Menghapus data validasi dari dataset utama
+### 11. Menghapus Data Validasi dari Dataset Utama
+Setelah pemisahan data validasi, data tersebut dihapus dari dataset pelatihan.
 ```python
 feature_minmax_transform = feature_minmax_transform[:-90]
 target_adj_close = target_adj_close[:-90]
 ```
 
-### 12. Melakukan pembagian data pelatihan dan pengujian menggunakan *TimeSeriesSplit*
+### 12. Melakukan Pembagian Data Pelatihan dan Pengujian Menggunakan *TimeSeriesSplit*
+Metode *TimeSeriesSplit* digunakan untuk menjaga urutan waktu dalam data.
 ```python
 ts_split = TimeSeriesSplit(n_splits=10)
 ```
